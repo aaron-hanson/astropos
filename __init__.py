@@ -10,9 +10,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-  return ".....Hello, World!"
+  return "Welcome to the Astropos API!"
 
-@app.route('/body/<string:body_name>/loc/<string:observer_loc>', methods=['GET'])
+@app.route('/body/<string:body_name>/<string:observer_loc>', methods=['GET'])
 def get_body_data(body_name, observer_loc):
   try:
     loc = cities.lookup(observer_loc)
@@ -23,6 +23,12 @@ def get_body_data(body_name, observer_loc):
     body = getattr(ephem, body_name.title())(loc)
   except:
     return errors('400', 'Invalid body name: %s' % body_name)
+
+  try:
+    cons = ephem.constellation(body)
+  except:
+    cons = None
+    pass
 
 #'compute_pressure', 'copy', 'date', 'disallow_circumpolar', 'elev', 
 #'elevation', 'epoch', 'horizon', 'lat', 'lon', 'long', 'name', 
@@ -41,9 +47,12 @@ def get_body_data(body_name, observer_loc):
   add(observer,loc,['lat','lon'],rtd)
 
   bodydata = {}
-  add(bodydata,body,['name','neverup','circumpolar'],str)
-  add(bodydata,body,['alt','az','ra','dec'],rtd)
-  add(bodydata,body,['mag'],float)
+  add(bodydata,body,['name','neverup','circumpolar','rise_time','transit_time','set_time'],str)
+  add(bodydata,body,['alt','az','ra','dec','elong','radius','a_ra','a_dec','g_ra','g_dec','hlon','hlat','libration_lat','libration_long','colong','subsolar_lat','cmlI','cmlII'],rtd)
+  add(bodydata,body,['mag','phase','sun_distance','earth_distance','size','x','y','z','moon_phase','earth_tilt','sun_tilt','earth_visible','sun_visible'],float)
+  if cons:
+    bodydata['constellation_abbr'] = cons[0]  
+    bodydata['constellation'] = cons[1]  
 
   result = {'observer': observer, 'body': bodydata}
   return jsonify(result)
@@ -54,7 +63,7 @@ def add(dict, obj, attrlist, func):
     if (hasattr(obj,attr)): dict[attr] = func(getattr(obj,attr))
 
 def rtd(radians):
-  return 180*radians/math.pi
+  return 180*float(radians)/math.pi
 
 def errors(status, detail):
   return jsonify({'errors': [{'status': status, 'detail': detail}] })
