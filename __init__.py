@@ -26,18 +26,18 @@ def get_body_data(star_name=None, body_name=None, loc_name=None):
     try:
       loc = cities.lookup(loc_name) if loc_name else None
     except:
-      return errors('400', 'Invalid observer location: {0}'.format(loc_name))
+      return errors(400, 'Invalid observer location: {0}'.format(loc_name))
 
     if body_name:
       try:
         body = getattr(ephem, body_name.title())()
       except:
-        return errors('400', 'Invalid body name: {0}'.format(body_name))
+        return errors(400, 'Invalid body name: {0}'.format(body_name))
     elif star_name:
       try:
         body = ephem.star(star_name.title())
       except:
-        return errors('400', 'Invalid star name: {0}'.format(star_name))
+        return errors(400, 'Invalid star name: {0}'.format(star_name))
 
     body.compute(loc) if loc else body.compute()
 
@@ -72,7 +72,7 @@ def get_body_data(star_name=None, body_name=None, loc_name=None):
 
     return json.dumps(result, sort_keys=True, indent=4, ensure_ascii=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
   except Exception as ex:
-    return errors('500', 'Internal server error: {0}'.format(str(ex)))
+    return errors(500, 'Internal server error: {0}'.format(str(ex)))
 
 def addstr(dict, obj, attrlist):
   add(dict, obj, attrlist, str)
@@ -99,7 +99,9 @@ def isodate(datestr):
     return "None"
 
 def errors(status, detail):
-  return jsonify({'errors': [{'status': status, 'detail': detail}] })
+  response = jsonify({'errors': [{'status': str(status), 'detail': detail}] })
+  response.status_code = status
+  return response
 
 
 if __name__ == '__main__':
