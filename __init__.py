@@ -4,7 +4,6 @@ import ephem, math, pytz, json
 from ephem import cities
 from flask import Flask, jsonify, request
 from datetime import datetime
-from inspect import ismethod
 from urllib.parse import quote
 
 app = Flask(__name__)
@@ -32,15 +31,15 @@ def get_body_data(star_name=None, body_name=None, loc_name=None):
     if body_name:
       try:
         body = getattr(ephem, body_name.title())()
-        body.compute(loc) if loc else body.compute()
       except:
         return errors('400', 'Invalid body name: {0}'.format(body_name))
     elif star_name:
       try:
         body = ephem.star(star_name.title())
-        body.compute(loc) if loc else body.compute()
       except:
         return errors('400', 'Invalid star name: {0}'.format(star_name))
+
+    body.compute(loc) if loc else body.compute()
 
     try:
       cons = ephem.constellation(body)
@@ -85,7 +84,10 @@ def adddate(dict, obj, attrlist):
   add(dict, obj, attrlist, isodate)
 def add(dict, obj, attrlist, func):
   for attr in attrlist:
-    if (hasattr(obj,attr)): dict[attr] = func(getattr(obj,attr))
+    try:
+      if (hasattr(obj,attr)): dict[attr] = func(getattr(obj,attr))
+    except:
+      pass
 
 def rtd(radians):
   return 180*float(radians)/math.pi
