@@ -1,5 +1,3 @@
-#!venv/bin/python3
-
 import ephem, math, pytz, json
 from ephem import cities
 from flask import Flask, jsonify, request
