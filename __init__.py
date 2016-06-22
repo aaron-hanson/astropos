@@ -7,7 +7,7 @@ from urllib.parse import quote
 app = Flask(__name__)
 __version__ = 1
 v = __version__
-host = 'http://astropos.sphygm.us'
+host = 'http://astropos.hansonsoft.com'
 
 @app.route('/')
 @app.route('/api')
